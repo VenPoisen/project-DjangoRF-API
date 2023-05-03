@@ -5,7 +5,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # A gente tem apps também
+    # Django rest framework
+    'rest_framework',
+    # Apps
     'recipes',
     'authors',
     'tag',
