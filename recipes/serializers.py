@@ -1,32 +1,22 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from tag.models import Tag
+from .models import Recipe
 
 
-class TagSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    name = serializers.CharField(max_length=255)
-    slug = serializers.SlugField()
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ("id", "name", "slug")
 
 
-class RecipeSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    title = serializers.CharField(max_length=65)
-    description = serializers.CharField(max_length=165)
-
-    # When SerializerMethodField is called,
-    # we need to defined it on def get_NAME()
-    preparation = serializers.SerializerMethodField()
+class RecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ("id", "title", "description", 'preparation',
+                  'category', "author", "tags", "tag_objects", "tag_link")
 
     category = serializers.StringRelatedField()
-    author = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
-    )
-
-    tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(),
-        many=True,
-    )
     tag_objects = TagSerializer(
         many=True,
         source='tags'
@@ -37,6 +27,10 @@ class RecipeSerializer(serializers.Serializer):
         queryset=Tag.objects.all(),
         view_name='recipes:recipe_api_v2_tag',
     )
+
+    # When SerializerMethodField is called,
+    # we need to defined it on def get_NAME()
+    preparation = serializers.SerializerMethodField()
 
     def get_preparation(self, recipe):
         return f'{recipe.preparation_time} {recipe.preparation_time_unit}'
