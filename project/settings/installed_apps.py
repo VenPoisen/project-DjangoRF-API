@@ -7,6 +7,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Django rest framework
     'rest_framework',
+    'rest_framework_simplejwt',
     # Apps
     'recipes',
     'authors',
