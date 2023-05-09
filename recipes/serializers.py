@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
 from tag.models import Tag
 from .models import Recipe
 from authors.validators import AuthorRecipeValidator
