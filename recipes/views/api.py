@@ -20,7 +20,7 @@ class RecipeAPIv2ViewSet(ModelViewSet):
     serializer_class = RecipeSerializer
     pagination_class = RecipeAPIv2Pagination
     permission_classes = [IsAuthenticatedOrReadOnly,]
-    http_method_names = ["GET", "OPTIONS", "HEAD", "POST", "PATCH", "DELETE"]
+    http_method_names = ["get", "options", "head", "post", "patch", "delete"]
 
     def get_queryset(self):
         qs = super().get_queryset()
