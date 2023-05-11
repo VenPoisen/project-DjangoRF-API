@@ -4,16 +4,39 @@ from recipes.tests.test_recipe_base import RecipeMixin
 from unittest.mock import patch
 
 
-class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
-    def get_recipe_reverse_url(self, query_string=''):
+class RecipeAPIv2Mixin(RecipeMixin):
+    def get_recipe_api_reverse_url_list(self, query_string=''):
         api_url = reverse("recipes:recipes-api-list") + query_string
         return api_url
 
     def get_recipe_api_list(self, query_string=''):
-        api_url = self.get_recipe_reverse_url(query_string)
+        api_url = self.get_recipe_api_reverse_url_list(query_string)
         response = self.client.get(api_url)
         return response
 
+    def get_recipe_api_reverse_url_detail(self, pk=''):
+        api_url = reverse("recipes:recipes-api-detail", args=(pk,))
+        return api_url
+
+    def get_auth_data(self, username='user', password='password'):
+        user = self.make_author(username=username, password=password)
+        api_token_url = reverse("recipes:token_obtain_pair")
+
+        response = self.client.post(
+            api_token_url,
+            data={
+                "username": username,
+                "password": password,
+            }
+        )
+        return {
+            'jwt_access_token': response.data.get('access'),
+            'jwt_refresh_token': response.data.get('refresh'),
+            'user': user,
+        }
+
+
+class RecipeAPIv2Test(test.APITestCase, RecipeAPIv2Mixin):
     def test_recipe_api_list_returns_status_code_200(self):
         response = self.get_recipe_api_list()
         self.assertEqual(response.status_code, 200)
@@ -64,6 +87,70 @@ class RecipeAPIv2Test(test.APITestCase, RecipeMixin):
         self.assertEqual(len(response.data.get('results')), 9)
 
     def test_recipe_api_list_user_must_send_jwt_token_to_create_recipe(self):
-        api_url = self.get_recipe_reverse_url()
+        api_url = self.get_recipe_api_reverse_url_list()
         response = self.client.post(api_url)
         self.assertEqual(response.status_code, 401)
+
+    def test_recipe_api_list_logged_user_can_create_a_recipe(self):
+        raw_data = self.get_recipe_raw_data()
+        auth_data = self.get_auth_data()
+        jwt_access_token = auth_data.get('jwt_access_token')
+        api_url = self.get_recipe_api_reverse_url_list()
+
+        response = self.client.post(
+            api_url, data=raw_data,
+            HTTP_AUTHORIZATION=f"Bearer {jwt_access_token}",
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+    def test_recipe_api_list_logged_user_can_update_a_recipe(self):
+        # Make a recipe
+        recipe = self.make_recipe()
+
+        # Change the recipe user to match the token user
+        auth_data = self.get_auth_data(username='test_patch')
+        author = auth_data.get("user")
+        recipe.author = author
+        recipe.save()
+
+        jwt_access_token = auth_data.get('jwt_access_token')
+        recipe_detail_url = self.get_recipe_api_reverse_url_detail(
+            pk=recipe.id)
+
+        wanted_new_title = f'New title updated by {author.username}'
+
+        # Action patch
+        response = self.client.patch(
+            recipe_detail_url,
+            data={'title': wanted_new_title},
+            HTTP_AUTHORIZATION=f"Bearer {jwt_access_token}",
+        )
+
+        # Assertion
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data.get('title'), wanted_new_title)
+
+    def test_recipe_api_list_logged_user_cannot_update_a_recipe_owned_by_another_user(self):
+        # Make a recipe with one user
+        recipe = self.make_recipe(
+            author_data={'username': 'recipe_author_user'},
+        )
+
+        recipe_detail_url = self.get_recipe_api_reverse_url_detail(
+            pk=recipe.id)
+
+        # Get token access with another user
+        another_user = self.get_auth_data(username='cant_update')
+        another_user_jwt_access_token = another_user.get('jwt_access_token')
+
+        # Action patch using authorization from another user
+        response = self.client.patch(
+            recipe_detail_url,
+            data={},
+            HTTP_AUTHORIZATION=f"Bearer {another_user_jwt_access_token}",
+        )
+
+        # Assertion 403 Forbidden
+        # because another user cannot update the recipe
+        self.assertEqual(response.status_code, 403)

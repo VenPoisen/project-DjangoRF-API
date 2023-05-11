@@ -70,6 +70,18 @@ class RecipeMixin:
             recipes.append(recipe)
         return recipes
 
+    def get_recipe_raw_data(self):
+        raw_data = {
+            "title": "This is the title",
+            "description": "This is the description",
+            "preparation_time": "10",
+            "preparation_time_unit": "minutes",
+            "servings": "2",
+            "servings_unit": "Persons",
+            "preparation_steps": "This are the steps for the recipe",
+        }
+        return raw_data
+
 
 class RecipeTestBase(TestCase, RecipeMixin):
     def setUp(self) -> None:
