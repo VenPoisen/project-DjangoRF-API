@@ -104,6 +104,64 @@ class RecipeAPIv2Test(test.APITestCase, RecipeAPIv2Mixin):
 
         self.assertEqual(response.status_code, 201)
 
+    def test_recipe_api_list_logged_user_can_delete_a_recipe(self):
+        # Create new user
+        new_user = self.get_auth_data(
+            username='test_delete',
+            password='password',
+        )
+
+        # Make a recipe with the new user created
+        # create_author=False to use the new user created
+        recipe = self.make_recipe(
+            create_author=False,
+            author_data=new_user.get('user'),
+        )
+
+        jwt_access_token = new_user.get('jwt_access_token')
+        api_url = self.get_recipe_api_reverse_url_detail(pk=recipe.id)
+
+        response = self.client.delete(
+            api_url,
+            HTTP_AUTHORIZATION=f"Bearer {jwt_access_token}",
+        )
+
+        # Assertion 204 No content
+        # Showing that the action delete succeed
+        self.assertEqual(response.status_code, 204)
+
+    def test_recipe_api_list_logged_user_cannot_delete_recipe_owned_by_another_user(self):
+        # Make a recipe with new user
+        # create_author=True to create new user
+        recipe = self.make_recipe(
+            create_author=True,
+            author_data={
+                'username': 'new_user',
+                'password': 'password',
+            },
+        )
+
+        # Create another user
+        another_user = self.get_auth_data(
+            username='cannot_delete',
+            password='password',
+        )
+
+        # Get JWT token access for another user
+        another_user_jwt_access_token = another_user.get('jwt_access_token')
+
+        api_url = self.get_recipe_api_reverse_url_detail(pk=recipe.id)
+
+        # Try to delete the recipe with another user token
+        response = self.client.delete(
+            api_url,
+            HTTP_AUTHORIZATION=f"Bearer {another_user_jwt_access_token}",
+        )
+
+        # Assertion 403 Forbidden
+        # Because another user cannot delete the recipe
+        self.assertEqual(response.status_code, 403)
+
     def test_recipe_api_list_logged_user_can_update_a_recipe(self):
         # Make a recipe
         recipe = self.make_recipe()

@@ -25,6 +25,7 @@ class RecipeMixin:
     def make_recipe(
         self,
         category_data=None,
+        create_author=True,
         author_data=None,
         title='Recipe Title',
         description='Recipe Description',
@@ -40,12 +41,18 @@ class RecipeMixin:
         if category_data is None:
             category_data = {}
 
-        if author_data is None:
+        if create_author is False and author_data is None:
+            raise ValueError(
+                'create_author=False: You must define an author_data or create one!'
+            )
+
+        if create_author and author_data is None:
             author_data = {}
 
         return Recipe.objects.create(
             category=self.make_category(**category_data),
-            author=self.make_author(**author_data),
+            author=self.make_author(
+                **author_data) if create_author else author_data,
             title=title,
             description=description,
             slug=slug,
