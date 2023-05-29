@@ -15,12 +15,13 @@ class RecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = (
             "id", "title", "description", 'preparation',
-            'category', "author", "tags", "tag_objects", "tag_link",
+            'category_id', 'category', "author_id", "author", "created_at", "tags", "tag_objects", "tag_link",
             'preparation_time', 'preparation_time_unit', 'servings',
             'servings_unit', 'preparation_steps', 'cover'
         )
 
     category = serializers.StringRelatedField(read_only=True,)
+    author = serializers.StringRelatedField(read_only=True,)
     tag_objects = TagSerializer(
         many=True,
         source='tags',
@@ -39,6 +40,12 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_preparation(self, recipe):
         return f'{recipe.preparation_time} {recipe.preparation_time_unit}'
+
+    created_at = serializers.SerializerMethodField(read_only=True,)
+
+    def get_created_at(self, recipe):
+        created_at_formatted = recipe.created_at.strftime("%d/%m/%Y at %H:%M")
+        return f'{created_at_formatted}'
 
     def validate(self, attrs):
         super_validate = super().validate(attrs)
