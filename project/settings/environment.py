@@ -1,11 +1,12 @@
 import os
 from pathlib import Path
-from typing import List
+import environ
 
-from utils.environment import get_env_variable, parse_comma_sep_str_to_list
+env = environ.Env()
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+environ.Env.read_env(BASE_DIR / '.env')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -15,12 +16,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'INSECURE')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if os.environ.get('DEBUG') == '1' else False
 
-ALLOWED_HOSTS: List[str] = parse_comma_sep_str_to_list(
-    get_env_variable('ALLOWED_HOSTS')
-)
-CSRF_TRUSTED_ORIGINS: List[str] = parse_comma_sep_str_to_list(
-    get_env_variable('CSRF_TRUSTED_ORIGINS')
-)
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
 
 ROOT_URLCONF = 'project.urls'
 
