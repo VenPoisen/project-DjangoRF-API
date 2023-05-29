@@ -16,7 +16,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'INSECURE')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if os.environ.get('DEBUG') == '1' else False
 
-ALLOWED_HOSTS = ["127.0.0.1", "https://amazingrecipes.onrender.com"]
+ALLOWED_HOSTS = ["127.0.0.1", "amazingrecipes.onrender.com"]
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
 
