@@ -44,7 +44,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     created_at = serializers.SerializerMethodField(read_only=True,)
 
     def get_created_at(self, recipe):
-        created_at_formatted = recipe.created_at.strftime("%d/%m/%Y at %H:%M")
+        created_at_formatted = recipe.created_at.strftime("%d/%m/%Y")
         return f'{created_at_formatted}'
 
     def validate(self, attrs):
