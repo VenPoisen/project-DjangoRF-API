@@ -10,6 +10,7 @@ INSTALLED_APPS = [
     # Django rest framework
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_spectacular',
     # Apps
     'recipes',
     'authors',
