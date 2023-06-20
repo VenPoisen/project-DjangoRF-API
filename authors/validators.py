@@ -30,7 +30,7 @@ class AuthorRecipeValidator:
             raise self.ErrorClass(self.errors)
 
     def clean_title(self):
-        title = self.data.get('title')
+        title = self.data.get('title', '')
 
         if len(title) < 5:
             self.errors['title'].append('Must have at least 5 chars.')

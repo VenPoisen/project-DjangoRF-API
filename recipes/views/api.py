@@ -32,6 +32,12 @@ class RecipeAPIv2ViewSet(ModelViewSet):
 
         return qs
 
+    def get_permissions(self):
+        if self.request.method in ['PATCH', 'DELETE']:
+            return [IsOwner(),]
+
+        return super().get_permissions()
+
     def get_object(self):
         pk = self.kwargs.get("pk", "")
         obj = get_object_or_404(
@@ -43,11 +49,39 @@ class RecipeAPIv2ViewSet(ModelViewSet):
 
         return obj
 
-    def get_permissions(self):
-        if self.request.method in ['PATCH', 'DELETE']:
-            return [IsOwner(),]
+    def partial_update(self, request, *args, **kwargs):
+        recipe = self.get_object()
 
-        return super().get_permissions()
+        if not request.data:
+            return Response(
+                {'Pass the fields you want to update': [
+                    'title',
+                    'description',
+                    'tags',
+                    'preparation_time',
+                    'preparation_time_unit',
+                    'servings',
+                    'servings_unit',
+                    'preparation_steps',
+                    'cover',
+                ]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        elif 'title' not in request.data:
+            request.data["title"] = recipe.title
+
+        serializer = RecipeSerializer(
+            instance=recipe,
+            data=request.data,
+            many=False,
+            context={'request': request},
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            serializer.data,
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
