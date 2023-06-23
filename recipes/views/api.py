@@ -1,7 +1,6 @@
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.shortcuts import get_object_or_404
@@ -95,15 +94,8 @@ class RecipeAPIv2ViewSet(ModelViewSet):
         )
 
 
-@api_view()
-def recipe_api_tag(request, pk):
-    tag = get_object_or_404(
-        Tag.objects.all(),
-        pk=pk
-    )
-    serializer = TagSerializer(
-        instance=tag,
-        many=False,
-    )
-
-    return Response(serializer.data)
+class RecipeAPIv2Tags(ModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly,]
+    http_method_names = ["get", "options", "head"]

@@ -15,7 +15,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = (
             "id", "title", "description", 'preparation',
-            'category_id', 'category', "author_id", "author", "created_at", "tags", "tag_objects", "tag_link",
+            'category_id', 'category', "author_id", "author", "created_at",
+            "tags", "tag_objects", "tag_link",
             'preparation_time', 'preparation_time_unit', 'servings',
             'servings_unit', 'preparation_steps', 'cover'
         )
@@ -30,7 +31,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     tag_link = serializers.HyperlinkedRelatedField(
         many=True,
         source="tags",
-        view_name='recipes:recipe_api_v2_tag',
+        view_name='recipes:recipes-api-tags-detail',
         read_only=True,
     )
 

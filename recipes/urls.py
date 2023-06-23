@@ -15,6 +15,11 @@ recipe_api_v2_router.register(
     api.RecipeAPIv2ViewSet,
     basename="recipes-api",
 )
+recipe_api_v2_router.register(
+    'recipes/api/tags/v2',
+    api.RecipeAPIv2Tags,
+    basename="recipes-api-tags",
+)
 
 urlpatterns = [
     path(
@@ -56,11 +61,6 @@ urlpatterns = [
         'recipes/theory/',
         site.theory,
         name='theory',
-    ),
-    path(
-        "recipes/api/v2/tag/<int:pk>/",
-        api.recipe_api_tag,
-        name="recipe_api_v2_tag",
     ),
 
     # TOKEN JWT urls
