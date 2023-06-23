@@ -66,8 +66,6 @@ class RecipeAPIv2ViewSet(ModelViewSet):
                 ]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        elif 'title' not in request.data:
-            request.data["title"] = recipe.title
 
         serializer = RecipeSerializer(
             instance=recipe,
